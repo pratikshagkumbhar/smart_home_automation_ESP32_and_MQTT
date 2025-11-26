@@ -7,7 +7,7 @@ Real-time IoT system for controlling **LED** and **Fan**, and monitoring **Tempe
 ## 🚀 Live Demo
 
 🔗 **Dashboard:** [https://pratikshagkumbhar.github.io/iot/](https://pratikshagkumbhar.github.io/iot/)
-🎥 **YouTube Demo:** (https://youtu.be/DopDysZniz8?si=nKiSGLQ-L_4HXQbt)
+🎥 **YouTube Demo:** ([https://youtu.be/DopDysZniz8?si=nKiSGLQ-L_4HXQbt](https://youtu.be/DopDysZniz8?si=grXDSIO-GqjuxkQG))
 
 ---
 
