@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Room Dashboard</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+.card {
+    background: #1e293b;
+    padding: 20px;
+    margin: 15px auto;
+    width: 300px;
+    border-radius: 12px;
+}
+button {
+    width: 120px;
+    padding: 12px;
+    margin: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.on  { background: #22c55e; }
+.off { background: #ef4444; }
+.voice { background: #3b82f6; color: white; }
+.value { font-size: 28px; margin-top: 10px; }
+.statusText { font-size: 20px; color: #38bdf8; }
+</style>
+</head>
+
+<body>
+
+<h1>🏠 Smart Room Dashboard</h1>
+
+<!-- VOICE BUTTON -->
+<button class="voice" onclick="startVoice()">🎤 Voice Command</button>
+
+<!-- Temperature -->
+<div class="card">
+    <h2>🌡 Temperature</h2>
+    <div id="temp" class="value">-- °C</div>
+</div>
+
+<!-- Humidity -->
+<div class="card">
+    <h2>💧 Humidity</h2>
+    <div id="hum" class="value">-- %</div>
+</div>
+
+<!-- Motion -->
+<div class="card">
+    <h2>👀 Motion</h2>
+    <div id="motion" class="value">--</div>
+</div>
+
+<!-- LED Control -->
+<div class="card">
+    <h2>💡 LED</h2>
+    <button class="on" onclick="ledOn()">ON</button>
+    <button class="off" onclick="ledOff()">OFF</button>
+    <p class="statusText">Status: <span id="ledStatus">OFF</span></p>
+</div>
+
+<!-- Fan Control -->
+<div class="card">
+    <h2>🌀 Fan</h2>
+    <button class="on" onclick="fanOn()">ON</button>
+    <button class="off" onclick="fanOff()">OFF</button>
+    <p class="statusText">Status: <span id="fanStatus">OFF</span></p>
+</div>
+
+<script>
+// MQTT CONNECTION
+const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+client.on("connect", () => {
+    client.subscribe("home/room1/temperature");
+    client.subscribe("home/room1/humidity");
+    client.subscribe("home/room1/motion");
+    client.subscribe("home/room1/leds/status");
+    client.subscribe("home/room1/fan/status");
+});
+
+// MESSAGE RECEIVED
+client.on("message", (topic, msg) => {
+    msg = msg.toString();
+
+    if (topic === "home/room1/temperature") document.getElementById("temp").innerText = msg + " °C";
+    if (topic === "home/room1/humidity") document.getElementById("hum").innerText = msg + " %";
+    if (topic === "home/room1/motion") document.getElementById("motion").innerText = msg;
+
+    if (topic === "home/room1/leds/status")
+        document.getElementById("ledStatus").innerText = msg;
+
+    if (topic === "home/room1/fan/status")
+        document.getElementById("fanStatus").innerText = msg;
+});
+
+// CONTROL FUNCTIONS
+function ledOn()  { client.publish("home/room1/leds/control", "on"); }
+function ledOff() { client.publish("home/room1/leds/control", "off"); }
+function fanOn()  { client.publish("home/room1/fan/control", "on"); }
+function fanOff() { client.publish("home/room1/fan/control", "off"); }
+
+// ⭐⭐⭐ VOICE COMMAND ⭐⭐⭐
+function startVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SpeechRecognition();
+
+    recog.lang = "en-US";
+    recog.start();
+
+    recog.onresult = (event) => {
+        const command = event.results[0][0].transcript.toLowerCase();
+        console.log("Voice:", command);
+
+        if (command.includes("light on") || command.includes("led on")) ledOn();
+        else if (command.includes("light off") || command.includes("led off")) ledOff();
+        else if (command.includes("fan on")) fanOn();
+        else if (command.includes("fan off")) fanOff();
+        else alert("Unknown Command: " + command);
+    };
+}
+</script>
+
+</body>
+</html>
